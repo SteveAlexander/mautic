@@ -101,4 +101,17 @@ if docker compose exec -T mautic_web test -f /var/www/html/config/local.php && d
     docker compose exec -T mautic_web sed -i "s|'site_url' => '.*',|'site_url' => 'https://$DOMAIN',|g" /var/www/html/config/local.php
 fi
 
+if docker compose exec -T mautic_web test -f /var/www/html/config/local.php; then
+    if docker compose exec -T mautic_web grep -q "\$_SERVER\['HTTPS'\]\s*=\s*'on';" /var/www/html/config/local.php; then
+        echo "## local.php file found, declaration found"
+    else
+        echo "## local.php file found, declaration not found"
+        docker compose exec -T mautic_web sed -i "s|<?php$|<?php\n\$_SERVER['HTTPS'] = 'on';|g" /var/www/html/config/local.php
+    fi
+else
+    echo "## local.php file not found"
+fi
+
+
+
 echo "## Script execution completed"
